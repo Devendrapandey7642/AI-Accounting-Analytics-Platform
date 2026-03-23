@@ -1,0 +1,32 @@
+services:
+  - type: web
+    runtime: python
+    name: ai-accounting-analytics-platform-api
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: APP_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://ai-accounting-analytics-platform-ui.onrender.com
+  - type: web
+    runtime: static
+    name: ai-accounting-analytics-platform-ui
+    plan: free
+    branch: main
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://ai-accounting-analytics-platform-api.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html

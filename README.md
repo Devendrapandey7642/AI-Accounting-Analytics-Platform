@@ -158,6 +158,67 @@ npm run lint
 npm run preview
 ```
 
+## Render deployment
+
+This repository is now set up for Render with a root-level [render.yaml](/C:/Users/dp686/Desktop/ai-accounting-analytics-platform/render.yaml) blueprint and a pinned Python version in [.python-version](/C:/Users/dp686/Desktop/ai-accounting-analytics-platform/.python-version).
+
+### Recommended Render setup
+
+- Deploy the backend as a Render Web Service
+- Deploy the frontend as a Render Static Site
+
+The included `render.yaml` defines both services:
+
+- `ai-accounting-analytics-platform-api`
+- `ai-accounting-analytics-platform-ui`
+
+If you use the Render dashboard manually instead of the blueprint:
+
+### Backend web service
+
+- Root Directory: leave blank
+- Build Command: `pip install -r requirements.txt`
+- Start Command: `python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+- Health Check Path: `/api/health`
+
+Environment variables:
+
+- `PYTHON_VERSION=3.11.11`
+- `APP_ENV=production`
+- `ALLOWED_ORIGINS=https://<your-frontend-service>.onrender.com`
+
+### Frontend static site
+
+- Root Directory: `frontend`
+- Build Command: `npm install && npm run build`
+- Publish Directory: `dist`
+
+Redirect / rewrite rules:
+
+- `/api/*` -> `https://<your-backend-service>.onrender.com/api/*` as a rewrite
+- `/*` -> `/index.html` as a rewrite
+
+### Important Render note about Python
+
+If Render defaults to Python `3.14.x`, the build can fail while compiling `pandas==2.1.4`.
+
+This repository pins Python `3.11.11` to avoid that problem. If you deploy manually in the dashboard, make sure Render uses Python `3.11.x`.
+
+### Persistent storage note
+
+This app stores uploads, processed analysis files, reports, and SQLite data on disk. On Render, persistent disks are available on paid web services. On the free plan, these files can be lost after redeploys or restarts.
+
+If you attach a persistent disk, set environment variables like:
+
+```env
+DATABASE_URL=sqlite:////opt/render/project/src/render-data/analytics.db
+UPLOAD_DIR=/opt/render/project/src/render-data/uploads
+PROCESSED_DIR=/opt/render/project/src/render-data/processed
+REPORTS_DIR=/opt/render/project/src/render-data/reports
+PDF_REPORTS_DIR=/opt/render/project/src/render-data/reports/pdf_reports
+PPT_REPORTS_DIR=/opt/render/project/src/render-data/reports/ppt_reports
+```
+
 ## Backend behavior
 
 The backend:
