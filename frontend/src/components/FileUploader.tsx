@@ -1,4 +1,4 @@
-import { useCallback, useState, DragEvent, ChangeEvent } from 'react'
+import { useCallback, useRef, useState, DragEvent, ChangeEvent } from 'react'
 import type { AxiosError } from 'axios'
 import { Upload, FileText, X, CheckCircle, AlertCircle, Sparkles } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
@@ -37,6 +37,7 @@ const formatFileSize = (bytes?: number) => {
 }
 
 const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [dragActive, setDragActive] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
@@ -184,65 +185,127 @@ const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
     setUploadWarnings([])
   }
 
+  const openFilePicker = () => {
+    fileInputRef.current?.click()
+  }
+
+  const allowPickerOverlay = files.length === 0 && !uploading && !uploadSuccess
+  const selectedFile = files[0]
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`relative rounded-3xl border-4 border-dashed p-6 transition-all duration-300 sm:p-10 lg:p-12 ${
+      role={allowPickerOverlay ? 'button' : undefined}
+      tabIndex={allowPickerOverlay ? 0 : -1}
+      onClick={allowPickerOverlay ? openFilePicker : undefined}
+      onKeyDown={allowPickerOverlay ? (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          openFilePicker()
+        }
+      } : undefined}
+      className={`relative rounded-[2rem] border-2 border-dashed p-4 transition-all duration-300 sm:rounded-3xl sm:border-4 sm:p-8 lg:p-10 ${
         dragActive
           ? 'border-blue-400 bg-blue-50 shadow-2xl ring-4 ring-blue-100'
-          : 'border-gray-300 hover:border-gray-400 bg-white/50'
+          : 'border-gray-300 bg-white/70 hover:border-gray-400'
       }`}
       onDragEnter={handleDrag}
       onDragLeave={handleDrag}
       onDragOver={handleDrag}
       onDrop={handleDrop}
     >
-      {files.length === 0 && (
-        <input
-          type="file"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          accept=".csv,.xlsx,.xls,.tsv,.txt,.xml"
-          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            if (e.target.files && e.target.files.length > 0) {
-              handleFileSelect(e.target.files)
-            }
-            // Reset the input value so the same file can be selected again
-            e.target.value = ''
-          }}
-        />
-      )}
-      
-      <div className="flex flex-col items-center justify-center text-center pointer-events-none">
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl sm:h-24 sm:w-24">
-          <Upload className="h-10 w-10 text-white sm:h-12 sm:w-12" />
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept=".csv,.xlsx,.xls,.tsv,.txt,.xml"
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleFileSelect(e.target.files)
+          }
+          e.target.value = ''
+        }}
+      />
+
+      <div className="flex flex-col items-center justify-center text-center">
+        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl sm:mb-6 sm:h-20 sm:w-20">
+          <Upload className="h-8 w-8 text-white sm:h-10 sm:w-10" />
         </div>
-        
-        <h3 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">Drop your accounting file here</h3>
-        <p className="mb-8 max-w-md text-base text-gray-600 sm:text-lg">
-          Supports CSV, Excel, TSV, TXT, and XML files up to 250MB. We automatically adapt to different column names and tabular formats.
+
+        <div className="mb-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
+          <span>Phone-friendly upload</span>
+          <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:inline-block" />
+          <span>Up to 250 MB</span>
+        </div>
+
+        <h3 className="mb-2 text-balance text-xl font-bold text-gray-900 sm:text-2xl">
+          Upload your accounting file
+        </h3>
+        <p className="mb-6 max-w-xl text-sm leading-6 text-gray-600 sm:mb-8 sm:text-base sm:leading-7">
+          Tap to choose a file or drag and drop on desktop. CSV, Excel, TSV, TXT, and XML formats are supported.
         </p>
+
+        <div className="mb-6 flex w-full flex-wrap items-center justify-center gap-2 text-xs text-slate-500 sm:text-sm">
+          {ALLOWED_EXTENSIONS.map((extension) => (
+            <span
+              key={extension}
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-medium uppercase tracking-[0.08em]"
+            >
+              {extension.replace('.', '')}
+            </span>
+          ))}
+        </div>
+
+        {files.length === 0 && (
+          <div className="mb-6 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(event) => {
+                event.stopPropagation()
+                openFilePicker()
+              }}
+              className="pointer-events-auto w-full rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3.5 font-bold text-white shadow-xl transition-all hover:from-blue-700 hover:to-blue-800 sm:w-auto"
+            >
+              Choose File
+            </motion.button>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              Best on phone: use the file picker and continue to analysis after upload.
+            </div>
+          </div>
+        )}
 
         {files.length > 0 && (
           <motion.div 
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="mx-auto mb-6 w-full max-w-md rounded-2xl border border-green-200 bg-green-50 p-4 sm:p-6"
+            className="mx-auto mb-6 w-full max-w-xl rounded-2xl border border-green-200 bg-green-50 p-4 sm:p-6"
           >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center space-x-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center space-x-3 text-left">
                 <FileText className="h-8 w-8 text-green-600" />
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-gray-900">{files[0].name}</p>
-                  <p className="text-sm text-gray-500">{(files[0].size / 1024 / 1024).toFixed(1)} MB</p>
+                  <p className="truncate font-medium text-gray-900">{selectedFile.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {formatFileSize(selectedFile.size)} / Ready for analysis
+                  </p>
                 </div>
               </div>
-              <button
-                onClick={handleUploadDifferent}
-                className="pointer-events-auto p-2 hover:bg-green-200 rounded-xl transition-colors"
-              >
-                <X className="h-5 w-5 text-gray-500" />
-              </button>
+              <div className="flex items-center justify-between gap-3 sm:justify-end">
+                <div className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-green-700">
+                  Selected file
+                </div>
+                <button
+                  type="button"
+                  onClick={handleUploadDifferent}
+                  className="pointer-events-auto rounded-xl p-2 transition-colors hover:bg-green-200"
+                  aria-label="Remove selected file"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -251,7 +314,7 @@ const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 max-w-2xl mx-auto text-left"
+            className="mx-auto mb-6 w-full max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left"
           >
             <div className="flex items-start space-x-3">
               <Sparkles className="h-5 w-5 text-amber-500 mt-0.5" />
@@ -270,7 +333,7 @@ const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto mb-6 w-full max-w-md rounded-2xl border border-red-200 bg-red-50 p-4"
+            className="mx-auto mb-6 w-full max-w-xl rounded-2xl border border-red-200 bg-red-50 p-4 text-left"
           >
             <div className="flex items-center space-x-3 mb-3">
               <AlertCircle className="h-5 w-5 text-red-500" />
@@ -279,7 +342,10 @@ const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={handleTryAgain}
+              onClick={(event) => {
+                event.stopPropagation()
+                handleTryAgain()
+              }}
               className="pointer-events-auto px-6 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
             >
               Try Again
@@ -288,8 +354,8 @@ const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
         )}
 
         {uploading ? (
-          <div className="w-full text-center">
-            <div className="w-full max-w-md bg-gray-200 rounded-full h-4 mb-4 overflow-hidden">
+          <div className="w-full max-w-xl text-center">
+            <div className="mb-4 h-4 w-full overflow-hidden rounded-full bg-gray-200">
               <motion.div 
                 className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full shadow-lg"
                 initial={{ width: 0 }}
@@ -310,20 +376,21 @@ const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full text-center"
+            className="w-full max-w-xl text-center"
           >
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <CheckCircle className="w-8 h-8 text-white" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
+              <CheckCircle className="h-8 w-8 text-white" />
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Upload Successful!</h4>
+            <h4 className="mb-2 text-xl font-bold text-gray-900">Upload Successful!</h4>
             <p className="text-gray-600 mb-3">{uploadedFileMeta?.message || 'Your file has been uploaded and is ready for analysis.'}</p>
             <div className="mb-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
               <span className="font-semibold">{uploadedFileMeta?.largeFile ? 'Large-file mode ready' : 'Fast analysis mode ready'}</span>
               <span className="hidden h-1 w-1 rounded-full bg-slate-400 sm:inline-block" />
-              <span>{formatFileSize(uploadedFileMeta?.fileSize || files[0]?.size)}</span>
+              <span>{formatFileSize(uploadedFileMeta?.fileSize || selectedFile?.size)}</span>
             </div>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <motion.button
+                type="button"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleContinue}
@@ -332,6 +399,7 @@ const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
                 Next: Start Analysis
               </motion.button>
               <motion.button
+                type="button"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleUploadDifferent}
@@ -343,6 +411,7 @@ const FileUploader = ({ onUploadComplete }: FileUploadProps) => {
           </motion.div>
         ) : (
           <motion.button
+            type="button"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleUpload}

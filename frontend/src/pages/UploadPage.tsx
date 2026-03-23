@@ -79,10 +79,10 @@ const UploadPage = () => {
       <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16"
+        className="mobile-safe-offset mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-14"
       >
-        <div className="mb-12 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
-          <div className="rounded-[2rem] border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel)] p-6 shadow-[var(--app-shadow)] sm:p-8">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+          <div className="order-2 rounded-[2rem] border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel)] p-5 shadow-[var(--app-shadow)] sm:p-8 lg:order-1">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-strong)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--app-muted)]">
               <Sparkles className="h-4 w-4 text-[color:var(--app-highlight-strong)]" />
               Command-first accounting workspace
@@ -105,7 +105,11 @@ const UploadPage = () => {
               auto-built charts, explainable KPI summaries, reports, and predictions.
             </motion.p>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className="mt-6 rounded-[1.5rem] border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-strong)] p-4 text-sm leading-6 text-[color:var(--app-muted)] sm:hidden">
+              Start by choosing a file below. After upload, the app automatically moves you into processing and then into the dashboard.
+            </div>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               <div className="rounded-[1.75rem] border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-strong)] p-5">
                 <DatabaseZap className="h-7 w-7 text-[color:var(--app-highlight-strong)]" />
                 <h2 className="mt-4 text-lg font-semibold">Large-file ready</h2>
@@ -130,7 +134,23 @@ const UploadPage = () => {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel)] p-5 shadow-[var(--app-shadow)] sm:p-6">
+          <div className="order-1 space-y-6 lg:order-2">
+            <div className="rounded-[2rem] border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel)] p-4 shadow-[var(--app-shadow)] sm:p-5">
+              <div className="mb-4 flex flex-col gap-3 text-left sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--app-muted)]">
+                    Upload now
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold">Start from your phone or laptop</h2>
+                </div>
+                <div className="rounded-full bg-[color:var(--app-panel-strong)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--app-muted)]">
+                  Mobile-friendly flow
+                </div>
+              </div>
+              <FileUploader />
+            </div>
+
+            <div className="rounded-[2rem] border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel)] p-5 shadow-[var(--app-shadow)] sm:p-6">
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--app-muted)]">
@@ -194,16 +214,9 @@ const UploadPage = () => {
                 )
               })}
             </div>
+            </div>
           </div>
         </div>
-
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.28 }}
-        >
-          <FileUploader />
-        </motion.div>
       </motion.main>
     </div>
   )
