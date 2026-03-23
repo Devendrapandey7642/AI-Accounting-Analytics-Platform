@@ -4,7 +4,13 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
-import shap
+
+try:
+    import shap
+    SHAP_AVAILABLE = True
+except ImportError:
+    shap = None
+    SHAP_AVAILABLE = False
 
 # Try to import LIME, but make it optional
 try:
@@ -111,6 +117,22 @@ class ForecastingAgent:
 
     def explain_with_shap(self, model, X, feature_names):
         """Generate SHAP explanations"""
+        if not SHAP_AVAILABLE:
+            logger.warning("SHAP not installed; falling back to basic feature importance")
+            if hasattr(model, 'feature_importances_'):
+                feature_importance = dict(zip(feature_names, model.feature_importances_))
+            elif hasattr(model, 'coef_'):
+                feature_importance = dict(zip(feature_names, np.abs(model.coef_)))
+            else:
+                feature_importance = {name: 0.1 for name in feature_names}
+
+            return {
+                'feature_importance': feature_importance,
+                'shap_plot': None,
+                'shap_values': 'SHAP not installed',
+                'error': 'Optional dependency "shap" is not installed',
+            }
+
         try:
             # Use a smaller sample for SHAP to avoid performance issues
             sample_size = min(1000, len(X))
