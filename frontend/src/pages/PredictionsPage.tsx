@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import axios from 'axios'
 import { BarChart3, Brain, DollarSign, Info, Target, TrendingUp } from 'lucide-react'
 import TopNavbar from '../components/TopNavbar'
 import Sidebar from '../components/Sidebar'
 import MobileTabBar from '../components/MobileTabBar'
 import { useAppStore } from '../store/useAppStore'
+import api from '../services/apiService'
 
 interface Prediction {
   prediction: number
@@ -59,7 +59,7 @@ const PredictionsPage = () => {
 
     const fetchPredictions = async () => {
       try {
-        const response = await axios.get(`/api/prediction-insights/${uploadId}`)
+        const response = await api.get(`/prediction-insights/${uploadId}`)
         if (!cancelled) {
           setPredictions(response.data)
         }

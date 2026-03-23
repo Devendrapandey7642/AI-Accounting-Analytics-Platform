@@ -4,7 +4,7 @@ import { AlertCircle, BarChart3, Brain, CheckCircle2, FileText, Loader2, Sparkle
 import { motion } from 'framer-motion'
 import TopNavbar from '../components/TopNavbar'
 import { useAppStore } from '../store/useAppStore'
-import { AnalysisStep, getAnalysisStatus, runAnalysis } from '../services/apiService'
+import { AnalysisStep, buildApiUrl, getAnalysisStatus, runAnalysis } from '../services/apiService'
 
 const iconMap = {
   load_data: FileText,
@@ -77,7 +77,7 @@ const ProcessingPage = () => {
         setSteps(initial.steps || [])
         setProgress(initial.progress || 0)
         setStatusMessage(initial.message)
-        eventSource = new EventSource(`/api/analysis-status-stream/${uploadId}`)
+        eventSource = new EventSource(buildApiUrl(`/analysis-status-stream/${uploadId}`))
         eventSource.onmessage = (event) => {
           if (cancelled) {
             return

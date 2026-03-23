@@ -1,7 +1,10 @@
 import time
 import uuid
+from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config import ALLOWED_ORIGINS
 from backend.database.db_manager import create_tables
@@ -65,11 +68,40 @@ app.include_router(report_router, prefix="/api")
 app.include_router(predictions_router, prefix="/api")
 app.include_router(workspace_router, prefix="/api")
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to AI Accounting Analytics Platform"}
+
+frontend_dist_dir = Path("frontend") / "dist"
+frontend_assets_dir = frontend_dist_dir / "assets"
+
+if frontend_assets_dir.exists():
+    app.mount("/assets", StaticFiles(directory=str(frontend_assets_dir)), name="frontend-assets")
 
 
 @app.get("/api/health")
 def read_health():
     return {"status": "ok", "allowed_origins": len(ALLOWED_ORIGINS)}
+
+
+@app.get("/", include_in_schema=False)
+def read_root():
+    index_file = frontend_dist_dir / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"message": "Welcome to AI Accounting Analytics Platform"}
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def spa_fallback(full_path: str):
+    # Keep API routes managed by mounted routers.
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not Found")
+
+    index_file = frontend_dist_dir / "index.html"
+    requested_file = frontend_dist_dir / full_path
+
+    if requested_file.is_file():
+        return FileResponse(requested_file)
+
+    if index_file.exists():
+        return FileResponse(index_file)
+
+    return {"message": "Frontend build not found. Run frontend build before deploy."}

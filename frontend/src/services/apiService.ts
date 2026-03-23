@@ -2,9 +2,15 @@ import axios from 'axios'
 import { AnalyticsData, DashboardCommandResponse, DashboardRequest, UploadSummary } from '../store/useAppStore'
 
 const resolvedApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || '/api'
+const normalizedApiBaseUrl = resolvedApiBaseUrl.replace(/\/+$/, '')
+
+export const buildApiUrl = (path: string) => {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return `${normalizedApiBaseUrl}${normalizedPath}`
+}
 
 const api = axios.create({
-  baseURL: resolvedApiBaseUrl,
+  baseURL: normalizedApiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
