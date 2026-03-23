@@ -20,9 +20,9 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY backend /app/backend
-COPY data /app/data
 COPY models /app/models
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
+RUN mkdir -p /app/data/uploads /app/data/processed /app/reports/pdf_reports /app/reports/ppt_reports
 
 EXPOSE 8000
 
