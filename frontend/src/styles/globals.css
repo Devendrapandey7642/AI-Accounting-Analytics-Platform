@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --app-bg: #edf4f7;
+  --app-bg-accent: rgba(14, 165, 233, 0.14);
+  --app-bg-accent-2: rgba(20, 184, 166, 0.12);
+  --app-ink: #10213a;
+  --app-muted: #516179;
+  --app-panel: rgba(255, 255, 255, 0.92);
+  --app-panel-strong: #ffffff;
+  --app-panel-border: rgba(148, 163, 184, 0.28);
+  --app-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
+  --app-highlight: #0f766e;
+  --app-highlight-strong: #0284c7;
+  --app-navbar: rgba(255, 255, 255, 0.88);
+}
+
+:root[data-theme='slate'] {
+  --app-bg: #0f172a;
+  --app-bg-accent: rgba(14, 165, 233, 0.18);
+  --app-bg-accent-2: rgba(244, 114, 182, 0.12);
+  --app-ink: #e2e8f0;
+  --app-muted: #94a3b8;
+  --app-panel: rgba(15, 23, 42, 0.86);
+  --app-panel-strong: rgba(15, 23, 42, 0.96);
+  --app-panel-border: rgba(148, 163, 184, 0.22);
+  --app-shadow: 0 26px 60px rgba(2, 8, 23, 0.45);
+  --app-highlight: #5eead4;
+  --app-highlight-strong: #7dd3fc;
+  --app-navbar: rgba(15, 23, 42, 0.88);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--app-ink);
+  font-family: 'Segoe UI Variable', 'Aptos', 'Trebuchet MS', 'Lucida Sans Unicode', sans-serif;
+  background:
+    radial-gradient(circle at top left, var(--app-bg-accent), transparent 24rem),
+    radial-gradient(circle at bottom right, var(--app-bg-accent-2), transparent 24rem),
+    linear-gradient(180deg, #f8fbfd 0%, var(--app-bg) 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+:root[data-theme='slate'] body {
+  background:
+    radial-gradient(circle at top left, var(--app-bg-accent), transparent 24rem),
+    radial-gradient(circle at bottom right, var(--app-bg-accent-2), transparent 24rem),
+    linear-gradient(180deg, #020617 0%, var(--app-bg) 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(15, 23, 42, 0.16);
+}
+
+#root {
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  min-width: 0;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--app-highlight-strong);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.32);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.glass-panel {
+  background: var(--app-panel);
+  border: 1px solid var(--app-panel-border);
+  box-shadow: var(--app-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.dashboard-shell {
+  position: relative;
+}
+
+.dashboard-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 70%);
+}
+
+.app-page-shell {
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+.app-page-frame {
+  min-height: calc(100dvh - 4rem);
+}
+
+.app-page-scroll {
+  min-height: calc(100dvh - 4rem);
+}
+
+.mobile-safe-offset {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 1024px) {
+  .app-page-frame {
+    height: calc(100dvh - 4rem);
+    min-height: calc(100dvh - 4rem);
+  }
+
+  .app-page-scroll {
+    height: 100%;
+    min-height: 100%;
+    overflow-y: auto;
+  }
+
+  .mobile-safe-offset {
+    padding-bottom: 5rem;
+  }
+}
